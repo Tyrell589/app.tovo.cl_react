@@ -1,0 +1,40 @@
+{
+  "name": "tovocl-modern",
+  "version": "1.0.0",
+  "description": "Modern restaurant management system built with React + Node.js microservices",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "type-check": "turbo run type-check",
+    "db:generate": "cd packages/database && npx prisma generate",
+    "db:migrate": "cd packages/database && npx prisma migrate dev",
+    "db:studio": "cd packages/database && npx prisma studio",
+    "test:auth": "node test-auth.js",
+    "test:product": "node test-product.js",
+    "test:restaurant": "node test-restaurant.js",
+    "test:sales": "node test-sales.js",
+    "test:customer": "node test-customer.js",
+    "test:online-ordering": "node test-online-ordering.js",
+    "test:kds": "node test-kds.js",
+    "test:reporting": "node test-reporting.js",
+    "test:notifications": "node test-notifications.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "turbo": "^1.11.0",
+    "typescript": "^5.3.0",
+    "axios": "^1.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

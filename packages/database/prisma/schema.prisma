@@ -1,0 +1,498 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== USER & AUTHENTICATION MODELS =====
+model Usuario {
+  usu_codigo        Int      @id @default(autoincrement())
+  usu_nombre        String   @db.VarChar(100)
+  usu_apellidopat   String   @db.VarChar(50)
+  usu_apellidomat   String?  @db.VarChar(50)
+  usu_fechacre      DateTime @default(now())
+  usu_estado        Int      @default(1)
+  usu_email         String   @unique @db.VarChar(100)
+  usu_password      String   @db.VarChar(255)
+  rol_codigo        Int
+  flg_del           Int      @default(1)
+
+  // Relations
+  rol               Rol      @relation(fields: [rol_codigo], references: [rol_codigo])
+  mesas             Mesa[]
+  ordenes           Orden[]
+  arqueos           ArqueoDinero[]
+  movimientosDinero MovimientoDinero[]
+
+  @@map("usuario")
+}
+
+model Rol {
+  rol_codigo                Int  @id @default(autoincrement())
+  rol_nombre                String @db.VarChar(50)
+  rol_cerrarmesa            Int  @default(1)
+  rol_crearadiciones        Int  @default(1)
+  rol_cancelaradiciones     Int  @default(1)
+  rol_crearplatos           Int  @default(1)
+  rol_eliminarplatos        Int  @default(1)
+  rol_crearbebidas          Int  @default(1)
+  rol_eliminarbebidas       Int  @default(1)
+  rol_crearclientes         Int  @default(1)
+  rol_eliminarclientes      Int  @default(1)
+  rol_crearusuarios         Int  @default(1)
+  rol_eliminarusuarios      Int  @default(1)
+  rol_verventas             Int  @default(1)
+  rol_verreportes           Int  @default(1)
+  rol_configuracion         Int  @default(1)
+  rol_controlstock          Int  @default(1)
+  rol_movimientodinero      Int  @default(1)
+  rol_arqueos               Int  @default(1)
+  rol_propinas              Int  @default(1)
+  rol_delivery              Int  @default(1)
+  rol_mostrador             Int  @default(1)
+  rol_cocina                Int  @default(1)
+  rol_administracion        Int  @default(1)
+  rol_online                Int  @default(1)
+  flg_del                   Int  @default(1)
+
+  // Relations
+  usuarios Usuario[]
+
+  @@map("rol")
+}
+
+// ===== RESTAURANT OPERATIONS MODELS =====
+model Mesa {
+  mes_codigo            Int       @id @default(autoincrement())
+  mes_numero            String    @db.VarChar(12)
+  mes_personas          Int?
+  usu_codigo            Int?
+  mes_estado            Int       @default(0)
+  cme_codigo            Int
+  mes_diseno            Int       @default(1)
+  mes_fechamodificacion DateTime?
+  flg_del               Int       @default(1)
+
+  // Relations
+  categoria             CategoriaMesa @relation(fields: [cme_codigo], references: [cme_codigo])
+  usuario               Usuario?      @relation(fields: [usu_codigo], references: [usu_codigo])
+  ordenes               Orden[]
+
+  @@map("mesa")
+}
+
+model CategoriaMesa {
+  cme_codigo Int    @id @default(autoincrement())
+  cme_nombre String @db.VarChar(50)
+
+  // Relations
+  mesas Mesa[]
+
+  @@map("categoriamesa")
+}
+
+model Orden {
+  ord_codigo                Int       @id @default(autoincrement())
+  usu_codigo                Int
+  ord_fecha                 DateTime
+  ord_hora                  String?   @db.Time
+  ord_personas              Int?
+  ord_comentario            String?   @db.Text
+  cli_codigo                Int?
+  ord_estado                String    @default("pending")
+  mes_codigo                Int
+  ord_fechamnodificacion    DateTime?
+  ord_descuento             Decimal?  @db.Decimal(10, 2)
+  ord_porcentaje            Decimal?  @db.Decimal(10, 2)
+  ord_delivery              Int       @default(0)
+  ord_deliverymenuonline    Int       @default(0)
+  ord_costoenvio            Decimal?  @db.Decimal(10, 2)
+  ord_estadodelivery        Int?
+  ord_mostrador             Int       @default(0)
+  ord_mostradormenuonline   Int       @default(0)
+  ord_estadomostrador       Int?
+  ord_session_id            String?   @db.VarChar(255)
+  ord_session_name          String?   @db.VarChar(255)
+  cup_codigo                Int?
+  opm_tipopagoonline        Int?
+  ord_fechaprogramaonline   DateTime?
+  ord_horaprogramaonline    String?   @db.VarChar(10)
+  flg_del                   Int       @default(1)
+
+  // Relations
+  usuario                   Usuario           @relation(fields: [usu_codigo], references: [usu_codigo])
+  mesa                      Mesa              @relation(fields: [mes_codigo], references: [mes_codigo])
+  cliente                   Cliente?          @relation(fields: [cli_codigo], references: [cli_codigo])
+  cupon                     Cupon?            @relation(fields: [cup_codigo], references: [cup_codigo])
+  ordenProductos            OrdenProducto[]
+  ordenProductosMenu        OrdenProductoMenu[]
+
+  @@map("orden")
+}
+
+model OrdenProducto {
+  orp_codigo            Int       @id @default(autoincrement())
+  usu_codigo            Int
+  ord_codigo            Int?
+  pla_codigo            Int?
+  beb_codigo            Int?
+  orp_cantidad          Int
+  orp_precio            Decimal   @db.Decimal(10, 2)
+  orp_comentario        String?   @db.Text
+  orp_estado            Int       @default(1)
+  orp_fechamodificacion DateTime?
+  flg_del               Int       @default(1)
+
+  // Relations
+  usuario               Usuario   @relation(fields: [usu_codigo], references: [usu_codigo])
+  orden                 Orden?    @relation(fields: [ord_codigo], references: [ord_codigo])
+  plato                 Plato?    @relation(fields: [pla_codigo], references: [pla_codigo])
+  bebida                Bebida?   @relation(fields: [beb_codigo], references: [beb_codigo])
+  adiciones             Adicion[]
+
+  @@map("ordenproducto")
+}
+
+model OrdenProductoMenu {
+  opm_codigo            Int       @id @default(autoincrement())
+  pla_codigo            Int?
+  beb_codigo            Int?
+  ord_codigo            Int?
+  opm_cantidad          Int?
+  opm_precio            Decimal?  @db.Decimal(10, 2)
+  opm_comentario        String?   @db.Text
+  opm_estado            Int       @default(1)
+  opm_fechamodificacion DateTime?
+  opm_session_id        String?   @db.VarChar(255)
+  opm_tipopagoonline    Int?
+  flg_del               Int       @default(1)
+
+  // Relations
+  orden                  Orden?   @relation(fields: [ord_codigo], references: [ord_codigo])
+  plato                  Plato?   @relation(fields: [pla_codigo], references: [pla_codigo])
+  bebida                 Bebida?  @relation(fields: [beb_codigo], references: [beb_codigo])
+
+  @@map("ordenproductomenu")
+}
+
+// ===== PRODUCT MANAGEMENT MODELS =====
+model Plato {
+  pla_codigo            Int      @id @default(autoincrement())
+  cat_codigo            Int
+  pla_nombre            String   @db.VarChar(100)
+  pla_descripcion       String?  @db.MediumText
+  pla_imagen            String?  @db.VarChar(100)
+  pla_stockminimo       Int?
+  pla_stocktotal        Int?
+  pla_precio            Decimal  @db.Decimal(10, 2)
+  pla_costo             Decimal? @db.Decimal(10, 2)
+  pla_estado            Int      @default(1)
+  pla_vender            Int      @default(1)
+  pla_control           Int      @default(0)
+  ico_codigo            Int?
+  col_codigo            Int?
+  pla_favorito          Int      @default(0)
+  pla_menu              Int      @default(0)
+  coc_codigo            Int?
+  pla_cocina            Int      @default(1)
+  pla_menuqr            Int      @default(1)
+  pla_timepreparacion   Int?
+  flg_del               Int      @default(1)
+
+  // Relations
+  categoria             CategoriaPlato @relation(fields: [cat_codigo], references: [cat_codigo])
+  cocina                Cocinas?       @relation(fields: [coc_codigo], references: [coc_codigo])
+  ordenProductos        OrdenProducto[]
+  ordenProductosMenu    OrdenProductoMenu[]
+  ingredientes          IngredienteProducto[]
+
+  @@map("plato")
+}
+
+model Bebida {
+  beb_codigo            Int      @id @default(autoincrement())
+  beb_nombre            String   @db.VarChar(100)
+  beb_descripcion       String?  @db.VarChar(100)
+  beb_imagen            String?  @db.VarChar(100)
+  cbe_codigo            Int
+  beb_stockminimo       Int?
+  beb_stocktotal        Int?
+  beb_precio            Decimal  @db.Decimal(10, 2)
+  beb_costo             Decimal? @db.Decimal(10, 2)
+  beb_estado            Int      @default(1)
+  beb_vender            Int      @default(1)
+  beb_control           Int      @default(0)
+  ico_codigo            Int?
+  col_codigo            Int?
+  beb_favorito          Int      @default(0)
+  beb_menu              Int      @default(0)
+  coc_codigo            Int?
+  beb_cocina            Int      @default(1)
+  beb_menuqr            Int      @default(1)
+  beb_timepreparacion   Int?
+  flg_del               Int      @default(1)
+
+  // Relations
+  categoria             CategoriaBebida @relation(fields: [cbe_codigo], references: [cbe_codigo])
+  cocina                Cocinas?        @relation(fields: [coc_codigo], references: [coc_codigo])
+  ordenProductos        OrdenProducto[]
+  ordenProductosMenu    OrdenProductoMenu[]
+  ingredientes          IngredienteProducto[]
+
+  @@map("bebida")
+}
+
+model CategoriaPlato {
+  cat_codigo Int     @id @default(autoincrement())
+  cat_nombre String  @db.VarChar(100)
+  cat_imagen String? @db.VarChar(100)
+  imo_codigo Int?
+  flg_del    Int     @default(1)
+
+  // Relations
+  platos Plato[]
+
+  @@map("categoriaplato")
+}
+
+model CategoriaBebida {
+  cbe_codigo Int     @id @default(autoincrement())
+  cbe_nombre String  @db.VarChar(100)
+  cbe_imagen String? @db.VarChar(100)
+  imo_codigo Int?
+  flg_del    Int     @default(1)
+
+  // Relations
+  bebidas Bebida[]
+
+  @@map("categoriabebida")
+}
+
+model Ingrediente {
+  ing_codigo Int     @id @default(autoincrement())
+  ing_nombre String  @db.VarChar(100)
+  cin_codigo Int
+  uni_codigo Int
+  ing_costo  Decimal? @db.Decimal(10, 2)
+  ing_estado Int     @default(1)
+  flg_del    Int     @default(1)
+
+  // Relations
+  categoriaIngrediente CategoriaIngrediente @relation(fields: [cin_codigo], references: [cin_codigo])
+  unidad               Unidad               @relation(fields: [uni_codigo], references: [uni_codigo])
+  productos            IngredienteProducto[]
+  adiciones            Adicion[]
+
+  @@map("ingrediente")
+}
+
+model CategoriaIngrediente {
+  cin_codigo Int    @id @default(autoincrement())
+  cin_nombre String @db.VarChar(100)
+  cin_estado Int    @default(1)
+  flg_del    Int    @default(1)
+
+  // Relations
+  ingredientes Ingrediente[]
+
+  @@map("categoriaingrediente")
+}
+
+model Unidad {
+  uni_codigo Int    @id @default(autoincrement())
+  uni_nombre String @db.VarChar(100)
+  uni_estado Int    @default(1)
+  flg_del    Int?
+
+  // Relations
+  ingredientes Ingrediente[]
+
+  @@map("unidad")
+}
+
+model IngredienteProducto {
+  ipr_codigo   Int     @id @default(autoincrement())
+  ing_codigo   Int?
+  pla_codigo   Int?
+  beb_codigo   Int?
+  ipr_cantidad Decimal? @db.Decimal(10, 2)
+  flg_del      Int     @default(1)
+
+  // Relations
+  ingrediente Ingrediente @relation(fields: [ing_codigo], references: [ing_codigo])
+  plato       Plato?      @relation(fields: [pla_codigo], references: [pla_codigo])
+  bebida      Bebida?     @relation(fields: [beb_codigo], references: [beb_codigo])
+
+  @@map("ingredienteproducto")
+}
+
+model Adicion {
+  adi_codigo   Int     @id @default(autoincrement())
+  orp_codigo   Int
+  adi_cantidad Decimal? @db.Decimal(10, 2)
+  ing_codigo   Int
+  adi_costo    Decimal? @db.Decimal(10, 2)
+  flg_del      Int     @default(1)
+
+  // Relations
+  ordenProducto OrdenProducto @relation(fields: [orp_codigo], references: [orp_codigo])
+  ingrediente   Ingrediente   @relation(fields: [ing_codigo], references: [ing_codigo])
+
+  @@map("adiciones")
+}
+
+// ===== CUSTOMER MANAGEMENT MODELS =====
+model Cliente {
+  cli_codigo              Int      @id @default(autoincrement())
+  cli_dni                 Int?
+  cli_ruc                 String?  @db.VarChar(15)
+  cli_nombre              String   @db.VarChar(50)
+  cli_apellidopat         String?  @db.VarChar(50)
+  cli_apellidomat         String?  @db.VarChar(50)
+  cli_telefono            String?  @db.VarChar(20)
+  cli_email               String?  @db.VarChar(100)
+  cli_direccion           String?  @db.VarChar(200)
+  cli_fechacre            DateTime @default(now())
+  cli_estado              Int      @default(1)
+  cli_delivery            Int      @default(0)
+  cli_mostrador           Int      @default(0)
+  cli_online              Int      @default(0)
+  cli_password            String?  @db.VarChar(255)
+  cli_verificacion        String?  @db.VarChar(255)
+  cli_estadoverificacion  Int      @default(0)
+  flg_del                 Int      @default(1)
+
+  // Relations
+  ordenes Orden[]
+
+  @@map("cliente")
+}
+
+// ===== FINANCIAL MODELS =====
+model TipoPago {
+  tpa_codigo          Int @id @default(autoincrement())
+  tpa_nombre          String @db.VarChar(20)
+  tpa_estado          Int @default(1)
+  tpa_delivery        Int @default(0)
+  tpa_estadodelivery  Int @default(1)
+  tpa_mostrador       Int @default(0)
+  tpa_estadomostrador Int @default(1)
+  tpa_online          Int @default(0)
+  tpa_estadoonline    Int @default(1)
+  flg_del             Int @default(1)
+
+  @@map("tipopago")
+}
+
+model Cupon {
+  cup_codigo          Int      @id @default(autoincrement())
+  cup_nombre          String   @db.VarChar(50)
+  cup_numcodigo       String   @db.VarChar(10)
+  cup_valor           Decimal  @db.Decimal(10, 2)
+  cup_tipodescuento   Int
+  cup_fechainicio     DateTime
+  cup_fechafin        DateTime
+  cup_estado          Int      @default(1)
+  cup_delivery        Int      @default(0)
+  cup_mostrador       Int      @default(0)
+  cup_online          Int      @default(0)
+  flg_del             Int      @default(1)
+
+  // Relations
+  ordenes Orden[]
+
+  @@map("cupon")
+}
+
+model ArqueoDinero {
+  arq_codigo        Int       @id @default(autoincrement())
+  arq_fechaapertura DateTime
+  arq_hora          String?   @db.Time
+  arq_fechacierre   DateTime?
+  arq_montoinicial  Decimal?  @db.Decimal(10, 2)
+  arq_monto         Decimal   @db.Decimal(10, 2)
+  arq_real          Decimal?  @db.Decimal(10, 2)
+  arq_diferencia    Decimal?  @db.Decimal(10, 2)
+  arq_comentario    String?   @db.MediumText
+  arq_estado        Int       @default(1)
+  usu_codigo        Int?
+  usu_cierre        Int       @default(1)
+  flg_del           Int       @default(1)
+
+  // Relations
+  usuario Usuario? @relation(fields: [usu_codigo], references: [usu_codigo])
+
+  @@map("arqueodinero")
+}
+
+model MovimientoDinero {
+  mov_codigo     Int       @id @default(autoincrement())
+  mov_fecha      DateTime
+  mov_monto      Decimal   @db.Decimal(10, 2)
+  mov_tipo       Int
+  mov_comentario String?   @db.VarChar(100)
+  usu_codigo     Int?
+  flg_del        Int       @default(1)
+
+  // Relations
+  usuario Usuario? @relation(fields: [usu_codigo], references: [usu_codigo])
+
+  @@map("movimientodinero")
+}
+
+// ===== SYSTEM CONFIGURATION MODELS =====
+model Variable {
+  var_codigo Int     @id @default(autoincrement())
+  var_igv    Int     @default(18)
+  var_nombre String? @db.VarChar(150)
+  var_nombreonline String? @db.VarChar(50)
+  var_moneda String? @db.VarChar(15)
+  var_costoenviomenu Decimal? @db.Decimal(10, 2)
+  var_enviodomicilio Int? @default(0)
+  var_montominimo Decimal? @db.Decimal(10, 2)
+  var_estadomonmin Int? @default(0)
+  flg_del    Int     @default(1)
+
+  @@map("variable")
+}
+
+model Cocinas {
+  coc_codigo Int    @id @default(autoincrement())
+  coc_nombre String @db.VarChar(20)
+  coc_estado Int    @default(1)
+  flg_del    Int    @default(0)
+
+  // Relations
+  platos  Plato[]
+  bebidas Bebida[]
+
+  @@map("cocinas")
+}
+
+model Turno {
+  tur_codigo Int    @id @default(autoincrement())
+  tur_nombre String @db.VarChar(20)
+  tur_inicio String @db.Time
+  tur_fin    String @db.Time
+  flg_del    Int    @default(1)
+
+  @@map("turno")
+}
+
+model Mensaje {
+  men_codigo Int      @id @default(autoincrement())
+  men_leido  String   @db.VarChar(180)
+  men_fecha  DateTime
+  men_asunto String   @db.VarChar(200)
+  men_texto  String   @db.MediumText
+  flg_del    Int      @default(1)
+
+  @@map("mensaje")
+}

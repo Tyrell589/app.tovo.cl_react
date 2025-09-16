@@ -1,0 +1,26 @@
+{
+  "name": "@tovocl/database",
+  "version": "1.0.0",
+  "description": "Database layer for TovoCL system using Prisma ORM",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "@tovocl/types": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,13 @@
+/* @fileoverview Global styles: Tailwind base + legacy CSS import hooks */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Legacy CSS hooks (to be populated by copied assets) */
+/* Example: */
+/* @import url('/legacy/bootstrap/bootstrap.min.css'); */
+/* @import url('/legacy/css/site.css'); */
+
+html, body { height: 100%; }
+
+
